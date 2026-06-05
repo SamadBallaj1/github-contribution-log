@@ -24,7 +24,11 @@ The replaygain plugin computes ReplayGain values through a backend. Right now th
 
 ### Expected Behavior
 
-You can set the replaygain backend to metaflac and it computes and writes ReplayGain for FLAC files using metaflac.
+You can set `replaygain.backend: metaflac` and beets uses metaflac for FLAC files. Concretely, done looks like:
+- a metaflac backend that's selectable in config
+- it reads or writes ReplayGain tags on FLAC through metaflac
+- it fails with a clear message if metaflac or the needed flag isn't there
+- a test covers it, matching the existing backend tests
 
 ### Current Behavior
 
@@ -35,7 +39,7 @@ There is no metaflac option. The plugin supports bs1770gain, ffmpeg, command, an
 - `beetsplug/replaygain.py` - the plugin and its backend classes. A new backend would follow the existing backend structure there.
 - The plugin's tests.
 
-The maintainer (sampsyo) suggested updating the plugin to use metaflac's ReplayGain support and failing gracefully when the flag isn't available. A 2024 discussion (beets #4935) covers how the backends work.
+The maintainer [suggested](https://github.com/beetbox/beets/issues/1203#issuecomment-68812475) updating the plugin now that the backends are extensible, and failing gracefully if the flag isn't there. There's also a [related discussion](https://github.com/beetbox/beets/discussions/4935) on how the backends behave.
 
 ---
 
