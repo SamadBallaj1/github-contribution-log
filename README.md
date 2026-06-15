@@ -90,30 +90,32 @@ I ran it twice and got the same error both times. As a sanity check I switched t
 
 ### Analysis
 
-[Your analysis of the root cause - what's causing the issue?]
+The plugin keeps its backends in a fixed registry in `beetsplug/replaygain.py`. `BACKEND_CLASSES` (line 1162) lists `CommandBackend`, `GStreamerBackend`, `AudioToolsBackend`, and `FfmpegBackend`. `BACKENDS` (line 1168) turns that into a dict keyed by each backend's `NAME`. In `ReplayGainPlugin.__init__` (lines 1202 to 1205), if the configured backend name isn't a key in `BACKENDS`, it raises the `UserError` I saw. So this isn't a bug in existing code. The root cause is that there's no `MetaflacBackend` class and no `metaflac` entry in the registry.
 
 ### Proposed Solution
 
-[High-level description of your fix approach]
+Add a `MetaflacBackend` class that subclasses `Backend` with `NAME = "metaflac"`, and register it in `BACKEND_CLASSES`. I'll model it on `CommandBackend` (line 540), since both drive an external command-line tool. The one wrinkle is how metaflac computes gain. When this issue was first discussed, metaflac could only write ReplayGain tags straight to the source files, with no analysis-only mode, and that was the roadblock earlier contributors hit. That's changed: current metaflac has a `--scan-replay-gain` option that analyzes without writing (I confirmed this in the xiph FLAC docs). So my backend can run `metaflac --scan-replay-gain`, parse the gains and peaks, and hand them back for beets to write, which matches how the other backends behave.
 
 ### Implementation Plan
 
 Using UMPIRE framework (adapted):
 
-**Understand:** [Restate the problem]
+**Understand:** beets can't compute ReplayGain for FLAC using metaflac. People who only have metaflac available (on a NAS, for example) can't use the plugin, and selecting `backend: metaflac` errors out instead of working.
 
-**Match:** [What similar patterns/solutions exist in the codebase?]
+**Match:** the `Backend` abstract base class (line 256) defines the interface every backend implements: `compute_track_gain` and `compute_album_gain`. `CommandBackend` (line 540) is the closest existing example, because it shells out to a tool, checks the tool is installed, and parses its output. The tests use a per-backend mixin pattern, and I learned the mixin has to implement `test_backend` or the test class won't be collected.
 
-**Plan:** [Step-by-step implementation plan]
-1. [Modify file X to do Y]
-2. [Add function Z]
-3. [Update tests]
+**Plan:**
+1. Add `MetaflacBackend(Backend)` to `beetsplug/replaygain.py` with `NAME = "metaflac"`. Check metaflac is on the PATH and fail with a clear message if it isn't.
+2. Implement `compute_track_gain` and `compute_album_gain` by calling `metaflac --scan-replay-gain` and parsing the track and album gain and peak values.
+3. Register the class in `BACKEND_CLASSES`.
+4. Add a `MetaflacBackendMixin` and a CLI test to `test/plugins/test_replaygain.py`, following the existing backend tests, implementing `test_backend` so it actually runs, with a FLAC fixture.
+5. Document the new backend in `docs/plugins/replaygain.rst` and add a changelog entry to `docs/changelog.rst`.
 
-**Implement:** [Link to your branch/commits as you work]
+**Implement:** this happens in Phase III on the [fix-issue-1203](https://github.com/SamadBallaj1/beets/tree/fix-issue-1203) branch.
 
-**Review:** [Self-review checklist - does it follow the project's contribution guidelines?]
+**Review:** before I open anything I'll run `poe format` and `poe lint` (beets uses ruff), keep the diff scoped to this one feature, and follow the conventions in `CONTRIBUTING.rst`: f-strings, the project's logging shim, and the four parts they ask for (code, tests, docs, changelog).
 
-**Evaluate:** [How will you verify it works?]
+**Evaluate:** my new metaflac test passes and `poetry run pytest test/plugins/test_replaygain.py` still passes. I'll also install metaflac and run `beet replaygain` on real FLAC files to confirm the tags get written. I need to watch the edge cases the FLAC docs call out: scanning needs every file to share the same sample rate and channel count, only mono and stereo are allowed, and it runs as a final two-pass step.
 
 ---
 
