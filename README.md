@@ -99,7 +99,7 @@ Add a `MetaflacBackend` class that subclasses `Backend` with `NAME = "metaflac"`
 
 Using UMPIRE framework (adapted):
 
-**Understand:** beets can't compute ReplayGain for FLAC using metaflac. People who only have metaflac available (on a NAS, for example) can't use the plugin, and selecting `backend: metaflac` errors out instead of working.
+**Understand:** beets has no metaflac backend, so people who only have metaflac (like on a NAS) can't compute ReplayGain for their FLAC. Selecting `backend: metaflac` just errors out.
 
 **Match:** the `Backend` abstract base class defines the interface every backend implements: `compute_track_gain` and `compute_album_gain`. `CommandBackend` is the closest existing example, since it shells out to a tool, checks the tool is installed, and parses its output. The tests use a per-backend mixin pattern, and I found out the hard way that the mixin has to implement `test_backend` or the test class won't even get collected.
 
