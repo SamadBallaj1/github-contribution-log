@@ -47,13 +47,12 @@ The maintainer [suggested](https://github.com/beetbox/beets/issues/1203#issuecom
 
 ### Environment Setup
 
-I cloned my fork next to my course notes and added the upstream `beetbox/beets` as a second remote. My fork was 79 commits behind upstream, so I fast-forwarded `master` to upstream before branching, then made a branch called `fix-issue-1203`.
-
-beets builds with poetry and runs its tasks through poethepoet, which it says in `CONTRIBUTING.rst`. I didn't have either, so I added them with `uv tool install poetry poethepoet`. My machine's default Python is 3.14, which is newer than what beets pins against, and I didn't want to fight missing wheels, so I pointed poetry at Python 3.12.9 with `poetry env use`. After that, `poetry install` built the virtualenv and pulled beets 2.11.0 plus the test dependencies cleanly.
-
-For external tools I have ffmpeg but not the GStreamer Python bindings, mp3gain, or metaflac itself. That's enough to reproduce the issue.
-
-To check the environment was healthy I ran `poetry run pytest test/test_util.py`, which gave 34 passed and 2 skipped (the skips are platform things, like a case-sensitive filesystem check). Then I ran the replaygain tests, `poetry run pytest test/plugins/test_replaygain.py`. Twelve tests collect, all gstreamer, and they skip because I don't have the GStreamer bindings. The ffmpeg and command test classes don't get collected at all. I dug into why: their mixins (`FfmpegBackendMixin`, `CmdBackendMixin`) never implement the `test_backend` method that `BackendMixin` marks abstract, so those classes stay abstract and pytest drops them. I confirmed it with `inspect.isabstract`. That's already true on master, not something I changed, but it's a warning for later: my metaflac test mixin has to implement `test_backend` the way `GstBackendMixin` does, or my new tests won't run either.
+- Cloned my fork next to my notes, added `beetbox/beets` as `upstream`. Fork was 79 commits behind, so I pulled `master` current before branching `fix-issue-1203`.
+- beets uses poetry and poe (it's in `CONTRIBUTING.rst`). Didn't have them, so `uv tool install poetry poethepoet`.
+- My default Python is 3.14, too new for clean wheels, so I pinned poetry to 3.12.9 with `poetry env use`. Then `poetry install` pulled beets 2.11.0 and the test deps.
+- Only have ffmpeg locally, not gstreamer, mp3gain, or metaflac. Enough to reproduce this.
+- Baseline: `poetry run pytest test/test_util.py` -> `34 passed, 2 skipped`.
+- `poetry run pytest test/plugins/test_replaygain.py` -> only 12 collect, all gstreamer, all skipped (no bindings). The ffmpeg and command tests don't collect at all. Their mixins never implement `test_backend`, which `BackendMixin` marks abstract, so the classes stay abstract and pytest drops them (checked with `inspect.isabstract`). Already like that on master, not me. So my metaflac test has to implement `test_backend` or it won't run either.
 
 ### Steps to Reproduce
 
