@@ -110,7 +110,7 @@ Using UMPIRE framework (adapted):
 4. Add a `MetaflacBackendMixin` and a CLI test to `test/plugins/test_replaygain.py`, following the existing backend tests, implementing `test_backend` so it actually runs, with a FLAC fixture.
 5. Document the new backend in `docs/plugins/replaygain.rst` and add a changelog entry to `docs/changelog.rst`.
 
-**Implement:** this happens in Phase III on the [fix-issue-1203](https://github.com/SamadBallaj1/beets/tree/fix-issue-1203) branch.
+**Implement:** I haven't written the code yet. It'll go on the [fix-issue-1203](https://github.com/SamadBallaj1/beets/tree/fix-issue-1203) branch.
 
 **Review:** before I open anything I'll run `poe format` and `poe lint` (beets uses ruff), keep the diff scoped to this one feature, and follow the conventions in `CONTRIBUTING.rst`: f-strings, the project's logging shim, and the four parts they ask for (code, tests, docs, changelog).
 
