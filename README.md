@@ -10,7 +10,7 @@
 
 ## Why I Chose This Issue
 
-beets is a music library tool I can actually read, and it's Python, which is what I work in. The replaygain plugin already has a few backends (command, gstreamer, audiotools, ffmpeg), so adding a metaflac one means following a pattern that's already in the file instead of inventing something new. That feels like the right size for a first contribution.
+beets is a music library tool I can actually read, and it's Python, which is what I work in. The replaygain plugin already has a few backends (command, gstreamer, audiotools, ffmpeg), so adding a metaflac one means following a pattern that's already in the file instead of inventing something new. Good size for a first PR.
 
 I also want to learn how a real plugin system is structured. The maintainer left a note on the issue about the right approach, so I have somewhere to start and someone to check my plan against.
 
@@ -75,13 +75,13 @@ The maintainer [suggested](https://github.com/beetbox/beets/issues/1203#issuecom
    beets.exceptions.UserError: Selected ReplayGain backend metaflac is not supported. Please select one of: command, gstreamer, audiotools, ffmpeg
    ```
 
-I ran it twice and got the same error both times. As a sanity check I switched the backend to `ffmpeg`, and that one gets past this check (it then runs its own "is ffmpeg installed" check), which confirmed the failure is specifically that metaflac isn't a registered backend.
+Ran it twice, same error both times. As a sanity check I switched the backend to `ffmpeg`. That one gets past this check (then it runs its own "is ffmpeg installed" check). So the failure is specifically that metaflac isn't a registered backend.
 
 ### Reproduction Evidence
 
 - **Commit showing reproduction:** this issue is a missing feature, not a code bug, so there's nothing to commit as a reproduction. The proof is the config above and the error it produces. My working branch is [fix-issue-1203](https://github.com/SamadBallaj1/beets/tree/fix-issue-1203).
 - **Screenshots/logs:** the `UserError` text above is the output that matters.
-- **My findings:** the plugin checks the configured backend name against a fixed registry and rejects anything that isn't in it. metaflac just isn't in the list. There's also a [related issue, #1549](https://github.com/beetbox/beets/issues/1549), asking for the same feature, so people still want it.
+- **My findings:** the plugin checks the configured backend name against a fixed registry and rejects anything that isn't in it. metaflac just isn't in the list. There's also a related, now-closed request, [#1549](https://github.com/beetbox/beets/issues/1549), for the same feature.
 
 ---
 
@@ -89,11 +89,11 @@ I ran it twice and got the same error both times. As a sanity check I switched t
 
 ### Analysis
 
-The plugin keeps its backends in a fixed registry in `beetsplug/replaygain.py`. `BACKEND_CLASSES` (line 1162) lists `CommandBackend`, `GStreamerBackend`, `AudioToolsBackend`, and `FfmpegBackend`. `BACKENDS` (line 1168) turns that into a dict keyed by each backend's `NAME`. In `ReplayGainPlugin.__init__` (lines 1202 to 1205), if the configured backend name isn't a key in `BACKENDS`, it raises the `UserError` I saw. So this isn't a bug in existing code. The root cause is that there's no `MetaflacBackend` class and no `metaflac` entry in the registry.
+The plugin keeps its backends in a fixed registry in `beetsplug/replaygain.py`. `BACKEND_CLASSES` (line 1162) lists `CommandBackend`, `GStreamerBackend`, `AudioToolsBackend`, and `FfmpegBackend`. `BACKENDS` (line 1168) turns that into a dict keyed by each backend's `NAME`. In `ReplayGainPlugin.__init__` (lines 1202 to 1205), if the configured backend name isn't a key in `BACKENDS`, it raises the `UserError` I saw. So it's not a bug in the existing code. There's just no `MetaflacBackend` class and no `metaflac` entry in the registry.
 
 ### Proposed Solution
 
-Add a `MetaflacBackend` class that subclasses `Backend` with `NAME = "metaflac"`, and register it in `BACKEND_CLASSES`. I'll model it on `CommandBackend` (line 540), since both drive an external command-line tool. The one wrinkle is how metaflac computes gain. When this issue was first discussed, metaflac could only write ReplayGain tags straight to the source files, with no analysis-only mode, and that was the roadblock earlier contributors hit. That's changed: current metaflac has a `--scan-replay-gain` option that analyzes without writing (I confirmed this in the xiph FLAC docs). So my backend can run `metaflac --scan-replay-gain`, parse the gains and peaks, and hand them back for beets to write, which matches how the other backends behave.
+Add a `MetaflacBackend` class that subclasses `Backend` with `NAME = "metaflac"`, and register it in `BACKEND_CLASSES`. I'll model it on `CommandBackend` (line 540), since both drive an external command-line tool. The one wrinkle is how metaflac computes gain. Older metaflac could only write ReplayGain tags straight to the source files, no analysis-only mode. That's what earlier contributors got stuck on. Current metaflac has a `--scan-replay-gain` option that analyzes without writing (I confirmed this in the xiph FLAC docs). So my backend can run `metaflac --scan-replay-gain`, parse the gains and peaks, and hand them back for beets to write, which matches how the other backends behave.
 
 ### Implementation Plan
 
@@ -114,7 +114,7 @@ Using UMPIRE framework (adapted):
 
 **Review:** before I open anything I'll run `poe format` and `poe lint` (beets uses ruff), keep the diff scoped to this one feature, and follow the conventions in `CONTRIBUTING.rst`: f-strings, the project's logging shim, and the four parts they ask for (code, tests, docs, changelog).
 
-**Evaluate:** my new metaflac test passes and `poetry run pytest test/plugins/test_replaygain.py` still passes. I'll also install metaflac and run `beet replaygain` on real FLAC files to confirm the tags get written. I need to watch the edge cases the FLAC docs call out: scanning needs every file to share the same sample rate and channel count, only mono and stereo are allowed, and it runs as a final two-pass step.
+**Evaluate:** my new metaflac test passes and `poetry run pytest test/plugins/test_replaygain.py` still passes. I'll also install metaflac and run `beet replaygain` on real FLAC files to confirm the tags get written. Edge cases from the FLAC docs I need to watch: every file in a scan has to share the same sample rate and channel count, and it only does mono and stereo. It also runs as a final two-pass step.
 
 ---
 
