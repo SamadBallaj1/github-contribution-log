@@ -97,7 +97,7 @@ Using UMPIRE framework (adapted):
 
 **Understand:** no metaflac backend exists, so `backend: metaflac` errors out. People who only have metaflac can't use the plugin on FLAC.
 
-**Match:** copy the pattern from `CommandBackend`. `Backend` sets the two methods to fill in, `compute_track_gain` and `compute_album_gain`.
+**Match:** copy the pattern from `CommandBackend`. `Backend` sets the two methods to fill in, `compute_track_gain` and `compute_album_gain`. `git log` shows the ffmpeg backend was added the same way back in 2018 (`c3af5b3`), so this is a well-worn path.
 
 **Plan:**
 1. Add a `MetaflacBackend` to `beetsplug/replaygain.py` and register it in `BACKEND_CLASSES`.
@@ -108,7 +108,7 @@ Using UMPIRE framework (adapted):
 
 **Review:** run `poe lint`, keep it small, follow `CONTRIBUTING.rst`.
 
-**Evaluate:** the new test and the existing ones pass, and `beet replaygain` works on a real FLAC.
+**Evaluate:** the new test and the existing ones pass, and `beet replaygain` works on a real FLAC. One thing to watch: metaflac scanning wants all the files at the same sample rate and channels, and only mono or stereo.
 
 ---
 
