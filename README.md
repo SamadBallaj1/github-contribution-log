@@ -54,7 +54,14 @@ The maintainer [suggested](https://github.com/beetbox/beets/issues/1203#issuecom
 
 ### Steps to Reproduce
 
-1. In a beets config, turn on the replaygain plugin and set `backend: metaflac`.
+1. In a beets config, turn on the replaygain plugin and set the backend to metaflac:
+
+   ```yaml
+   plugins: replaygain
+   replaygain:
+     backend: metaflac
+   ```
+
 2. Run `beet ls`.
 
 **Expected:** beets uses metaflac for FLAC files.
@@ -93,9 +100,9 @@ Using UMPIRE framework (adapted):
 **Match:** copy the pattern from `CommandBackend`. `Backend` sets the two methods to fill in, `compute_track_gain` and `compute_album_gain`.
 
 **Plan:**
-1. Add a `MetaflacBackend` and register it in `BACKEND_CLASSES`.
-2. Fill in the two methods using `metaflac --scan-replay-gain`.
-3. Add a test (its mixin needs `test_backend` or it won't run), and a docs + changelog entry.
+1. Add a `MetaflacBackend` to `beetsplug/replaygain.py` and register it in `BACKEND_CLASSES`.
+2. Fill in `compute_track_gain` and `compute_album_gain` using `metaflac --scan-replay-gain`.
+3. Add a test in `test/plugins/test_replaygain.py` (its mixin needs `test_backend` or it won't run), and update `docs/plugins/replaygain.rst` and `docs/changelog.rst`.
 
 **Implement:** not written yet, goes on the [fix-issue-1203](https://github.com/SamadBallaj1/beets/tree/fix-issue-1203) branch.
 
