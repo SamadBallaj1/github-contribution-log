@@ -76,8 +76,9 @@ Got the same error every time.
 
 ### Reproduction Evidence
 
-- **Branch:** [fix-issue-1203](https://github.com/SamadBallaj1/beets/tree/fix-issue-1203)
-- It's a missing feature, so there's no code to commit yet. The config and error above are the proof.
+- **Commit showing reproduction:** it's a missing feature, not a code bug, so there's nothing to commit yet. The config and error above are the proof. Working branch: [fix-issue-1203](https://github.com/SamadBallaj1/beets/tree/fix-issue-1203).
+- **Screenshots/logs:** the `UserError` output above is the log. It's a command-line error, so there's no UI to screenshot.
+- **My findings:** the plugin checks the backend name against a fixed list and rejects anything that isn't in it. metaflac just isn't there.
 
 ---
 
