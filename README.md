@@ -4,7 +4,7 @@
 **Student:** Samad Ballaj (@SamadBallaj1)  
 **Issue:** [beetbox/beets #1203 - replaygain: metaflac backend](https://github.com/beetbox/beets/issues/1203)  
 **Fork:** https://github.com/SamadBallaj1/beets  
-**Status:** Phase II In Progress
+**Status:** Phase III In Progress
 
 ---
 
@@ -117,36 +117,42 @@ Using UMPIRE framework (adapted):
 
 ### Unit Tests
 
-- [ ] Test case 1: [Description]
-- [ ] Test case 2: [Description]
-- [ ] Test case 3: [Description]
+- [x] `test_metaflac_backend_parses_replaygain_tags` feeds the backend a sample of metaflac's `NAME=VALUE` output and checks it pulls out the gain (`-11.55 dB` becomes `-11.55`) and the peak. It runs even when metaflac isn't installed, so the parsing is always covered.
 
 ### Integration Tests
 
-- [ ] Integration scenario 1
-- [ ] Integration scenario 2
+- [x] `TestReplayGainMetaflacCli` reuses the same CLI test class the other backends use, pointed at the `whitenoise.flac` fixture. It runs `beet replaygain` for real through metaflac and checks the track and album gains get written and read back. 7 of these pass; the 4 that skip are the Opus (R128) cases, which metaflac doesn't handle.
 
 ### Manual Testing
 
-[What you tested manually and results]
+Before I wrote the parser I ran `metaflac --add-replay-gain` and then `--show-tag` on a copy of the FLAC fixture to see the exact output (`REPLAYGAIN_TRACK_GAIN=-11.55 dB`). Once the code was in, `poe test test/plugins/test_replaygain.py` gave 7 passed, 16 skipped (the skips are gstreamer, ffmpeg, and mp3gain, none of which are installed on my machine). `ruff check`, `ruff format`, and `mypy` all come back clean.
 
 ---
 
 ## Implementation Notes
 
-### Week [X] Progress
+### Week 3 Progress
 
-[What you built this week, challenges faced, decisions made]
+I added a `MetaflacBackend` to `beetsplug/replaygain.py` and registered it in `BACKEND_CLASSES`, so you can now pick it with `backend: metaflac`. It shells out to `metaflac --add-replay-gain` to compute the gain, then reads the values back with `metaflac --show-tag`. I modeled it on the existing `CommandBackend`, since both wrap an external command-line tool.
 
-### Week [Y] Progress
+The backend only handles FLAC and skips anything else. For a single track it scans the file on its own; for an album it hands the whole set to metaflac in one call, which is how metaflac works out the album gain.
 
-[Continue documenting as you work]
+### Challenges Faced
+
+Two things tripped me up. First, metaflac writes the ReplayGain tags into the FLAC itself, unlike the `command` and `ffmpeg` backends that just print numbers, so I had to run it and then read the tags back with `--show-tag` instead of parsing one command's output. Second, metaflac always targets an 89 dB reference, so my gains came out slightly off when I tried a non-default `targetlevel`. I fixed that by adding `target_level - 89`, the same adjustment the `command` backend makes, and `test_targetlevel_has_effect` passes now.
 
 ### Code Changes
 
-- **Files modified:** [List]
-- **Key commits:** [Links to important commits]
-- **Approach decisions:** [Why you chose certain approaches]
+- **Files modified:**
+  - `beetsplug/replaygain.py` (the new `MetaflacBackend`, registered in `BACKEND_CLASSES`)
+  - `test/plugins/test_replaygain.py` (a `MetaflacBackendMixin`, the `TestReplayGainMetaflacCli` class, and a parsing unit test)
+  - `docs/plugins/replaygain.rst` and `docs/changelog.rst` (docs and a changelog line)
+- **Key commits:**
+  - [`6845129`](https://github.com/SamadBallaj1/beets/commit/6845129) feat(replaygain): add a metaflac backend
+  - [`60c7053`](https://github.com/SamadBallaj1/beets/commit/60c7053) docs(replaygain): document the metaflac backend
+  - [`dea6256`](https://github.com/SamadBallaj1/beets/commit/dea6256) fix(replaygain): handle malformed metaflac tag output
+- **Branch:** https://github.com/SamadBallaj1/beets/tree/fix-issue-1203
+- **Approach decisions:** I reused the project's existing backend test harness instead of writing a new one. metaflac's known limits (FLAC only, and every file in an album needs the same sample rate and channel layout) I left in place and documented in the plugin docs rather than working around them. I also made the tag reader turn any bad metaflac output into a skip-this-file error instead of letting it crash the whole run, the same way the other backends behave.
 
 ---
 
