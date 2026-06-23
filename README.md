@@ -4,7 +4,7 @@
 **Student:** Samad Ballaj (@SamadBallaj1)  
 **Issue:** [beetbox/beets #1203 - replaygain: metaflac backend](https://github.com/beetbox/beets/issues/1203)  
 **Fork:** https://github.com/SamadBallaj1/beets  
-**Status:** Phase III In Progress
+**Status:** Phase III Complete
 
 ---
 
