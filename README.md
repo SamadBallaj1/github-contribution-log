@@ -181,7 +181,7 @@ The part that threw me was that metaflac writes the ReplayGain tags into the fil
 
 ### What I'd Do Differently Next Time
 
-Rebase onto the latest upstream earlier, and add the changelog entry last since it conflicts the most.
+Rebase onto upstream more often instead of once at the end. My only real conflict was the changelog, and it only happened because beets shipped 2.12.0 while my PR was open, so my line ended up in a section that had already been released. The beets PR template actually says to add the changelog entry only once review is nearly done, since that file conflicts more than any other, and I get why now. Next time I'll keep that entry under Unreleased and add it late, and treat any busy shared file as the last thing I touch, not the first. The bigger takeaway for me: on an active project the base branch keeps moving while you work, so small frequent rebases beat one big catch-up at the end.
 
 ---
 
