@@ -4,7 +4,7 @@
 **Student:** Samad Ballaj (@SamadBallaj1)  
 **Issue:** [beetbox/beets #1203 - replaygain: metaflac backend](https://github.com/beetbox/beets/issues/1203)  
 **Fork:** https://github.com/SamadBallaj1/beets  
-**Status:** Phase III Complete
+**Status:** Phase IV Complete
 
 ---
 
@@ -158,15 +158,14 @@ Two things tripped me up. First, metaflac writes the ReplayGain tags into the FL
 
 ## Pull Request
 
-**PR Link:** [GitHub PR URL when submitted]
+**PR Link:** https://github.com/beetbox/beets/pull/6800
 
-**PR Description:** [Draft or final PR description - much of the content above can be adapted]
+**PR Description:** Adds a metaflac backend to the replaygain plugin (issue #1203). It runs `metaflac --add-replay-gain` to compute the gain and reads it back with `metaflac --show-tag`, modeled on the existing command backend. FLAC only.
 
 **Maintainer Feedback:**
-- [Date]: [Summary of feedback received]
-- [Date]: [How you addressed it]
+- None yet. The PR is in review (auto-requested from the beets maintainers). I'll log feedback and my responses here as it comes in.
 
-**Status:** [Awaiting review / Iterating / Approved / Merged]
+**Status:** Awaiting review
 
 ---
 
@@ -174,20 +173,20 @@ Two things tripped me up. First, metaflac writes the ReplayGain tags into the FL
 
 ### Technical Skills Gained
 
-[What you learned technically]
+I learned how beets' replaygain backends are built: you subclass `Backend`, fill in `compute_track_gain` and `compute_album_gain`, and register the class. I also got more comfortable calling a CLI tool from Python and reading its output back, and writing tests against the project's own test harness.
 
 ### Challenges Overcome
 
-[What was hard and how you solved it]
+The part that threw me was that metaflac writes the ReplayGain tags into the file instead of printing them, so I had to run it and then read the tags back. After I rebased, beets had just released 2.12.0, so my changelog line landed under the released section and CI caught it. I moved it under Unreleased.
 
 ### What I'd Do Differently Next Time
 
-[Reflection on your process]
+Rebase onto the latest upstream earlier, and add the changelog entry last since it conflicts the most.
 
 ---
 
 ## Resources Used
 
-- [Link to helpful documentation]
-- [Tutorial or Stack Overflow post that helped]
-- [GitHub issues or discussions that helped]
+- beets `CONTRIBUTING.rst` and the existing backends in `beetsplug/replaygain.py`
+- metaflac docs: https://xiph.org/flac/documentation_tools_metaflac.html
+- The issue and discussion: https://github.com/beetbox/beets/issues/1203
