@@ -163,9 +163,10 @@ Two things tripped me up. First, metaflac writes the ReplayGain tags into the FL
 **PR Description:** Adds a metaflac backend to the replaygain plugin (issue #1203). It runs `metaflac --add-replay-gain` to compute the gain and reads it back with `metaflac --show-tag`, modeled on the existing command backend. FLAC only.
 
 **Maintainer Feedback:**
-- None yet. The PR is in review (auto-requested from the beets maintainers). I'll log feedback and my responses here as it comes in.
+- Jul 5: @snejus (maintainer) reviewed and requested two changes: use filter() in the metaflac track-gain loop, and install flac in ci.yaml so the tests run on CI. Updated in commits 63b1b83 and 4c55afc8.
+- Jul 5: Confirmed I tested it locally (ran it on a FLAC file, correct ReplayGain values written) and re-requested review.
 
-**Status:** Awaiting review
+**Status:** Iterating (addressed first review round, awaiting re-review)
 
 ---
 
