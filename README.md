@@ -148,9 +148,9 @@ Two things tripped me up. First, metaflac writes the ReplayGain tags into the FL
   - `test/plugins/test_replaygain.py` (a `MetaflacBackendMixin`, the `TestReplayGainMetaflacCli` class, and a parsing unit test)
   - `docs/plugins/replaygain.rst` and `docs/changelog.rst` (docs and a changelog line)
 - **Key commits:**
-  - [`6845129`](https://github.com/SamadBallaj1/beets/commit/6845129) feat(replaygain): add a metaflac backend
-  - [`60c7053`](https://github.com/SamadBallaj1/beets/commit/60c7053) docs(replaygain): document the metaflac backend
-  - [`dea6256`](https://github.com/SamadBallaj1/beets/commit/dea6256) fix(replaygain): handle malformed metaflac tag output
+  - [`fcd47c1`](https://github.com/SamadBallaj1/beets/commit/fcd47c1) replaygain: add metaflac backend (backend, docs, changelog, and tests)
+  - [`f94d9ce`](https://github.com/SamadBallaj1/beets/commit/f94d9ce) replaygain: filter supported items in metaflac track gain
+  - [`73d8b39`](https://github.com/SamadBallaj1/beets/commit/73d8b39) ci: install flac for the metaflac replaygain tests
 - **Branch:** https://github.com/SamadBallaj1/beets/tree/fix-issue-1203
 - **Approach decisions:** I reused the project's existing backend test harness instead of writing a new one. metaflac's known limits (FLAC only, and every file in an album needs the same sample rate and channel layout) I left in place and documented in the plugin docs rather than working around them. I also made the tag reader turn any bad metaflac output into a skip-this-file error instead of letting it crash the whole run, the same way the other backends behave.
 
@@ -163,8 +163,9 @@ Two things tripped me up. First, metaflac writes the ReplayGain tags into the FL
 **PR Description:** Adds a metaflac backend to the replaygain plugin (issue #1203). It runs `metaflac --add-replay-gain` to compute the gain and reads it back with `metaflac --show-tag`, modeled on the existing command backend. FLAC only.
 
 **Maintainer Feedback:**
-- Jul 5: @snejus (maintainer) reviewed and requested two changes: use filter() in the metaflac track-gain loop, and install flac in ci.yaml so the tests run on CI. Updated in commits 63b1b83 and 4c55afc8.
+- Jul 5: @snejus (maintainer) reviewed and requested two changes: use filter() in the metaflac track-gain loop, and install flac in ci.yaml so the tests run on CI. Updated in commits f94d9ce and 73d8b39.
 - Jul 5: Confirmed I tested it locally (ran it on a FLAC file, correct ReplayGain values written) and re-requested review.
+- Jul 12: Rebased onto the latest master to clear another changelog conflict (beets shipped more changes while the PR sat open), and reworked the PR description to follow beets' template and add an acceptance-criteria checklist. Tests still green.
 
 **Status:** Iterating (addressed first review round, awaiting re-review)
 
