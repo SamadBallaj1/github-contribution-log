@@ -4,7 +4,7 @@
 **Student:** Samad Ballaj (@SamadBallaj1)  
 **Issue:** [beetbox/beets #1203 - replaygain: metaflac backend](https://github.com/beetbox/beets/issues/1203)  
 **Fork:** https://github.com/SamadBallaj1/beets  
-**Status:** Phase IV Complete
+**Status:** Phase IV Complete (PR merged)
 
 ---
 
@@ -164,8 +164,9 @@ Two things tripped me up. First, metaflac writes the ReplayGain tags into the FL
 - Jul 5: Confirmed I tested it locally (ran it on a FLAC file, correct ReplayGain values written) and re-requested review.
 - Jul 12: Rebased onto the latest master to clear another changelog conflict, since beets shipped more changes while the PR sat open. Tests still green.
 - Jul 14: @snejus took another look and asked me to highlight the docs config example and rebase again. I changed the `::` block to a `.. code-block:: yaml` so the yaml renders highlighted, and rebased onto master. All 18 checks green.
+- Jul 14: @snejus approved and merged the PR (merge commit `17d6798`). Issue #1203 is now closed.
 
-**Status:** Iterating (addressed first review round, awaiting re-review)
+**Status:** Merged
 
 ---
 
